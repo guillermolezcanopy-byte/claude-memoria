@@ -10,7 +10,7 @@
   let turn = 0; // 0 o 1
   let soundOn = true;
 
-  // ---------- Sonido (Web Audio, sin archivos) ----------
+  // ---------- Sonido: "hoja de papel" (Web Audio, sin archivos) ----------
   let actx = null;
   function audio() {
     if (!soundOn) return null;
@@ -22,29 +22,50 @@
     if (actx.state === "suspended") actx.resume();
     return actx;
   }
-  function tone(freq, dur, type = "sine", vol = 0.18, delay = 0) {
+
+  function noiseBuffer(ac, dur) {
+    const len = Math.max(1, Math.floor(ac.sampleRate * dur));
+    const buf = ac.createBuffer(1, len, ac.sampleRate);
+    const data = buf.getChannelData(0);
+    for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
+    return buf;
+  }
+
+  // Ruido filtrado en micro-ráfagas: suena a papel/hoja moviéndose.
+  function rustle(intensity = 1, bursts = 3) {
     const ac = audio();
     if (!ac) return;
-    const t0 = ac.currentTime + delay;
-    const osc = ac.createOscillator();
-    const gain = ac.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t0);
-    gain.gain.setValueAtTime(0, t0);
-    gain.gain.linearRampToValueAtTime(vol, t0 + 0.01);
-    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
-    osc.connect(gain).connect(ac.destination);
-    osc.start(t0);
-    osc.stop(t0 + dur + 0.02);
+    const t0 = ac.currentTime;
+    for (let b = 0; b < bursts; b++) {
+      const start = t0 + b * 0.045 + Math.random() * 0.02;
+      const dur = 0.07 + Math.random() * 0.06;
+      const src = ac.createBufferSource();
+      src.buffer = noiseBuffer(ac, dur);
+
+      const bp = ac.createBiquadFilter();
+      bp.type = "bandpass";
+      bp.frequency.value = 2600 + Math.random() * 2600;
+      bp.Q.value = 0.6;
+
+      const hp = ac.createBiquadFilter();
+      hp.type = "highpass";
+      hp.frequency.value = 1100;
+
+      const g = ac.createGain();
+      const peak = 0.07 * intensity;
+      g.gain.setValueAtTime(0, start);
+      g.gain.linearRampToValueAtTime(peak, start + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
+
+      src.connect(bp).connect(hp).connect(g).connect(ac.destination);
+      src.start(start);
+      src.stop(start + dur + 0.03);
+    }
   }
-  const sndFlip = () => { tone(420, 0.12, "triangle", 0.15); tone(660, 0.14, "triangle", 0.12, 0.05); };
-  const sndNext = () => tone(330, 0.10, "sine", 0.13);
-  const sndHeat = (lvl) => { // pequeño "subidón" según el nivel
-    const base = [0, 392, 466, 523, 622][lvl] || 440;
-    tone(base, 0.16, "sawtooth", 0.10);
-    if (lvl >= 3) tone(base * 1.5, 0.22, "sawtooth", 0.10, 0.08);
-  };
-  const sndEnd = () => { tone(523, 0.16, "sine", 0.14); tone(659, 0.18, "sine", 0.14, 0.12); tone(784, 0.3, "sine", 0.14, 0.24); };
+
+  const sndFlip = () => rustle(1.0, 4);   // dar vuelta la carta
+  const sndPage = () => rustle(0.8, 3);   // pasar / saltar carta
+  const sndSoft = () => rustle(0.5, 2);   // detalles suaves (fin de tiempo)
 
   // ---------- Construir selección de niveles ----------
   const levelsEl = $("levels");
@@ -88,6 +109,12 @@
     return "🔥".repeat(lvl) + "<span style='opacity:.25'>" + "🔥".repeat(4 - lvl) + "</span>";
   }
 
+  function fmt(secs) {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return m + ":" + String(s).padStart(2, "0");
+  }
+
   function showScreen(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
     $(id).classList.add("active");
@@ -99,6 +126,69 @@
     t.classList.remove("bump");
     void t.offsetWidth; // reinicia la animación
     t.classList.add("bump");
+  }
+
+  // ---------- Temporizador ----------
+  let timerId = null;
+  let timerTotal = 0;
+  let timerLeft = 0;
+
+  function stopTimer() {
+    if (timerId) { clearInterval(timerId); timerId = null; }
+  }
+
+  function resetTimerUI() {
+    const btn = $("timerBtn");
+    btn.classList.remove("running", "done");
+    $("timerFill").classList.remove("done");
+    $("timerFill").style.transform = "scaleX(1)";
+    if (timerTotal) $("timerLabel").textContent = fmt(timerTotal);
+  }
+
+  function setupTimer(secs) {
+    stopTimer();
+    if (!secs) {
+      $("timerWrap").style.display = "none";
+      timerTotal = timerLeft = 0;
+      return;
+    }
+    timerTotal = secs;
+    timerLeft = secs;
+    $("timerWrap").style.display = "";
+    resetTimerUI();
+  }
+
+  function tick() {
+    timerLeft--;
+    $("timerLabel").textContent = fmt(Math.max(0, timerLeft));
+    $("timerFill").style.transform = "scaleX(" + Math.max(0, timerLeft) / timerTotal + ")";
+    if (timerLeft <= 0) {
+      stopTimer();
+      const btn = $("timerBtn");
+      btn.classList.remove("running");
+      btn.classList.add("done");
+      $("timerFill").classList.add("done");
+      $("timerLabel").textContent = "¡Tiempo!";
+      sndSoft(); setTimeout(sndSoft, 200);
+      if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
+    }
+  }
+
+  function toggleTimer() {
+    if (!timerTotal) return;
+    const btn = $("timerBtn");
+    if (timerId) {
+      // pausar
+      stopTimer();
+      btn.classList.remove("running");
+      return;
+    }
+    if (timerLeft <= 0) timerLeft = timerTotal; // reiniciar tras "¡Tiempo!"
+    resetTimerUI();
+    btn.classList.add("running");
+    $("timerLabel").textContent = fmt(timerLeft);
+    $("timerFill").style.transform = "scaleX(" + timerLeft / timerTotal + ")";
+    timerId = setInterval(tick, 1000);
   }
 
   // ---------- Flujo del juego ----------
@@ -121,20 +211,22 @@
   function renderCard() {
     const card = $("card");
     card.classList.remove("flipped");
+    stopTimer();
 
     if (index >= deck.length) {
       $("card").style.display = "none";
       $("empty").style.display = "";
       $("skipBtn").style.display = "none";
+      $("timerWrap").style.display = "none";
       $("nextBtn").textContent = "Jugar de nuevo";
       $("turn").textContent = "¡Fin del juego!";
       $("progress").textContent = `Carta ${deck.length}/${deck.length}`;
-      sndEnd();
       return;
     }
 
     const c = deck[index];
     const info = LEVELS[c.lvl];
+    setupTimer(c.secs);
 
     setTimeout(() => {
       const badge = $("badge");
@@ -172,25 +264,23 @@
   $("card").addEventListener("click", () => {
     const card = $("card");
     card.classList.toggle("flipped");
-    if (card.classList.contains("flipped")) {
-      sndFlip();
-      const c = deck[index];
-      if (c) setTimeout(() => sndHeat(c.lvl), 180);
-    }
+    if (card.classList.contains("flipped")) sndFlip();
   });
+
+  $("timerBtn").addEventListener("click", toggleTimer);
 
   $("nextBtn").addEventListener("click", () => {
     if (index >= deck.length) {
       startGame();
       return;
     }
-    sndNext();
+    sndPage();
     advance();
   });
 
   $("skipBtn").addEventListener("click", () => {
     if (index >= deck.length) return;
-    sndNext();
+    sndPage();
     // Mandar la carta actual al final del mazo (mismo turno)
     const c = deck.splice(index, 1)[0];
     deck.push(c);
@@ -198,6 +288,7 @@
   });
 
   $("restart").addEventListener("click", () => {
+    stopTimer();
     showScreen("setup");
   });
 

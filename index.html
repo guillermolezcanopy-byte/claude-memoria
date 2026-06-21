@@ -280,6 +280,29 @@
     transition: transform .25s ease;
   }
   .pill.turn.bump { transform: scale(1.12); }
+
+  /* temporizador */
+  .timerWrap { padding: 0 0 6px; display: flex; flex-direction: column; gap: 8px; }
+  .timerBtn {
+    align-self: center;
+    padding: 10px 22px; font-size: 16px; font-weight: 700;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .timerBtn.running { border-color: var(--accent); color: var(--gold); }
+  .timerBtn #timerLabel { font-variant-numeric: tabular-nums; min-width: 48px; text-align: center; }
+  .timerTrack {
+    height: 6px; border-radius: 999px;
+    background: rgba(255,255,255,.12); overflow: hidden;
+  }
+  .timerFill {
+    height: 100%; width: 100%;
+    background: linear-gradient(90deg, var(--gold), var(--accent2), var(--accent));
+    transform-origin: left center;
+    transition: transform 1s linear;
+  }
+  .timerFill.done { background: var(--accent); }
+  @keyframes timeup { 0%,100%{opacity:1} 50%{opacity:.25} }
+  .timerBtn.done { animation: timeup .4s ease 3; border-color: var(--accent); color: #fff; }
 </style>
 </head>
 <body>
@@ -343,6 +366,11 @@
         <h2>Se acabó el mazo 🥵</h2>
         <p style="color:var(--muted)">Espero que la hayan pasado bien…</p>
       </div>
+    </div>
+
+    <div class="timerWrap" id="timerWrap" style="display:none">
+      <button class="btn ghost timerBtn" id="timerBtn">⏱️ <span id="timerLabel">0:30</span></button>
+      <div class="timerTrack"><div class="timerFill" id="timerFill"></div></div>
     </div>
 
     <div class="controls">
