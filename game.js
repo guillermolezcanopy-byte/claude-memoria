@@ -3,11 +3,11 @@
   "use strict";
 
   const $ = (id) => document.getElementById(id);
-  const selected = new Set([1, 2]); // niveles activos por defecto
+  const selected = new Set([1, 2]);
   let deck = [];
   let index = 0;
   let players = ["Jugador 1", "Jugador 2"];
-  let turn = 0; // 0 o 1
+  let turn = 0;
   let soundOn = true;
 
   // ---------- Sonido: "hoja de papel" (Web Audio, sin archivos) ----------
@@ -22,7 +22,6 @@
     if (actx.state === "suspended") actx.resume();
     return actx;
   }
-
   function noiseBuffer(ac, dur) {
     const len = Math.max(1, Math.floor(ac.sampleRate * dur));
     const buf = ac.createBuffer(1, len, ac.sampleRate);
@@ -30,8 +29,6 @@
     for (let i = 0; i < len; i++) data[i] = Math.random() * 2 - 1;
     return buf;
   }
-
-  // Ruido filtrado en micro-ráfagas: suena a papel/hoja moviéndose.
   function rustle(intensity = 1, bursts = 3) {
     const ac = audio();
     if (!ac) return;
@@ -41,33 +38,28 @@
       const dur = 0.07 + Math.random() * 0.06;
       const src = ac.createBufferSource();
       src.buffer = noiseBuffer(ac, dur);
-
       const bp = ac.createBiquadFilter();
       bp.type = "bandpass";
       bp.frequency.value = 2600 + Math.random() * 2600;
       bp.Q.value = 0.6;
-
       const hp = ac.createBiquadFilter();
       hp.type = "highpass";
       hp.frequency.value = 1100;
-
       const g = ac.createGain();
       const peak = 0.07 * intensity;
       g.gain.setValueAtTime(0, start);
       g.gain.linearRampToValueAtTime(peak, start + 0.012);
       g.gain.exponentialRampToValueAtTime(0.0001, start + dur);
-
       src.connect(bp).connect(hp).connect(g).connect(ac.destination);
       src.start(start);
       src.stop(start + dur + 0.03);
     }
   }
+  const sndFlip = () => rustle(1.0, 4);
+  const sndPage = () => rustle(0.8, 3);
+  const sndSoft = () => rustle(0.5, 2);
 
-  const sndFlip = () => rustle(1.0, 4);   // dar vuelta la carta
-  const sndPage = () => rustle(0.8, 3);   // pasar / saltar carta
-  const sndSoft = () => rustle(0.5, 2);   // detalles suaves (fin de tiempo)
-
-  // ---------- Construir selección de niveles ----------
+  // ---------- Niveles ----------
   const levelsEl = $("levels");
   Object.entries(LEVELS).forEach(([lvl, info]) => {
     const n = Number(lvl);
@@ -95,7 +87,7 @@
     $("startBtn").disabled = selected.size === 0;
   }
 
-  // ---------- Utilidades ----------
+  // ---------- Utils ----------
   function shuffle(arr) {
     const a = arr.slice();
     for (let i = a.length - 1; i > 0; i--) {
@@ -104,39 +96,27 @@
     }
     return a;
   }
-
   function heatIcons(lvl) {
     return "🔥".repeat(lvl) + "<span style='opacity:.25'>" + "🔥".repeat(4 - lvl) + "</span>";
   }
-
   function fmt(secs) {
-    const m = Math.floor(secs / 60);
-    const s = secs % 60;
-    return m + ":" + String(s).padStart(2, "0");
+    return Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0");
   }
-
   function showScreen(id) {
     document.querySelectorAll(".screen").forEach((s) => s.classList.remove("active"));
     $(id).classList.add("active");
   }
-
   function renderTurn() {
     const t = $("turn");
     t.textContent = "Turno de " + players[turn];
     t.classList.remove("bump");
-    void t.offsetWidth; // reinicia la animación
+    void t.offsetWidth;
     t.classList.add("bump");
   }
 
   // ---------- Temporizador ----------
-  let timerId = null;
-  let timerTotal = 0;
-  let timerLeft = 0;
-
-  function stopTimer() {
-    if (timerId) { clearInterval(timerId); timerId = null; }
-  }
-
+  let timerId = null, timerTotal = 0, timerLeft = 0;
+  function stopTimer() { if (timerId) { clearInterval(timerId); timerId = null; } }
   function resetTimerUI() {
     const btn = $("timerBtn");
     btn.classList.remove("running", "done");
@@ -144,20 +124,13 @@
     $("timerFill").style.transform = "scaleX(1)";
     if (timerTotal) $("timerLabel").textContent = fmt(timerTotal);
   }
-
   function setupTimer(secs) {
     stopTimer();
-    if (!secs) {
-      $("timerWrap").style.display = "none";
-      timerTotal = timerLeft = 0;
-      return;
-    }
-    timerTotal = secs;
-    timerLeft = secs;
+    if (!secs) { $("timerWrap").style.display = "none"; timerTotal = timerLeft = 0; return; }
+    timerTotal = secs; timerLeft = secs;
     $("timerWrap").style.display = "";
     resetTimerUI();
   }
-
   function tick() {
     timerLeft--;
     $("timerLabel").textContent = fmt(Math.max(0, timerLeft));
@@ -173,17 +146,11 @@
       if (navigator.vibrate) navigator.vibrate([120, 60, 120]);
     }
   }
-
   function toggleTimer() {
     if (!timerTotal) return;
     const btn = $("timerBtn");
-    if (timerId) {
-      // pausar
-      stopTimer();
-      btn.classList.remove("running");
-      return;
-    }
-    if (timerLeft <= 0) timerLeft = timerTotal; // reiniciar tras "¡Tiempo!"
+    if (timerId) { stopTimer(); btn.classList.remove("running"); return; }
+    if (timerLeft <= 0) timerLeft = timerTotal;
     resetTimerUI();
     btn.classList.add("running");
     $("timerLabel").textContent = fmt(timerLeft);
@@ -191,7 +158,28 @@
     timerId = setInterval(tick, 1000);
   }
 
-  // ---------- Flujo del juego ----------
+  // ---------- Acciones ----------
+  function skipCard() {
+    if (index >= deck.length) return;
+    stopTimer();
+    sndPage();
+    const c = deck.splice(index, 1)[0];
+    deck.push(c);
+    renderCard();
+  }
+
+  function advance() {
+    stopTimer();
+    sndPage();
+    index++;
+    if (index < deck.length) {
+      turn = turn === 0 ? 1 : 0;
+      renderTurn();
+    }
+    renderCard();
+  }
+
+  // ---------- Juego ----------
   function startGame() {
     const n1 = $("p1").value.trim();
     const n2 = $("p2").value.trim();
@@ -201,26 +189,33 @@
     index = 0;
     showScreen("game");
     $("empty").style.display = "none";
-    $("card").style.display = "";
+    $("cardWrap").style.display = "";
     $("skipBtn").style.display = "";
-    $("nextBtn").textContent = "Siguiente carta";
+    $("nextBtn").style.display = "";
+    $("swipeHint").style.display = "";
     renderTurn();
     renderCard();
   }
 
   function renderCard() {
     const card = $("card");
+    const wrap = $("cardWrap");
     card.classList.remove("flipped");
+    wrap.classList.remove("snap", "fly");
+    wrap.style.cssText = "";
+    $("lblLeft").style.opacity = 0;
+    $("lblRight").style.opacity = 0;
     stopTimer();
 
     if (index >= deck.length) {
-      $("card").style.display = "none";
+      $("cardWrap").style.display = "none";
       $("empty").style.display = "";
       $("skipBtn").style.display = "none";
+      $("nextBtn").style.display = "none";
+      $("swipeHint").style.display = "none";
       $("timerWrap").style.display = "none";
-      $("nextBtn").textContent = "Jugar de nuevo";
       $("turn").textContent = "¡Fin del juego!";
-      $("progress").textContent = `Carta ${deck.length}/${deck.length}`;
+      $("progress").textContent = "Carta " + deck.length + "/" + deck.length;
       return;
     }
 
@@ -232,65 +227,112 @@
       const badge = $("badge");
       badge.textContent = info.name;
       badge.style.background = info.color;
-      $("num").textContent = `#${index + 1}`;
+      $("num").textContent = "#" + (index + 1);
       $("cardText").textContent = c.text;
       $("cardFoot").innerHTML =
-        `Le toca a <b>${players[turn]}</b> · Picante: <span class="heat">${heatIcons(c.lvl)}</span>`;
-      const wrap = $("cardText").parentElement.parentElement;
-      wrap.classList.add("fade");
-      setTimeout(() => wrap.classList.remove("fade"), 500);
+        "Le toca a <b>" + players[turn] + "</b> · Picante: <span class='heat'>" + heatIcons(c.lvl) + "</span>";
+      const front = $("front");
+      front.classList.add("fade");
+      setTimeout(() => front.classList.remove("fade"), 450);
     }, 0);
 
-    $("progress").textContent = `Carta ${index + 1}/${deck.length}`;
+    $("progress").textContent = "Carta " + (index + 1) + "/" + deck.length;
   }
 
-  function advance() {
-    index++;
-    if (index < deck.length) {
-      turn = turn === 0 ? 1 : 0; // alternar turno
-      renderTurn();
-    }
-    renderCard();
+  // ---------- Swipe estilo Tinder ----------
+  const THRESHOLD = 85; // px para confirmar la acción
+  let startX = 0, startY = 0, curX = 0;
+  let dragging = false, moved = false, animating = false;
+
+  function getXY(e) {
+    const t = e.touches ? e.touches[0] : e;
+    return { x: t.clientX, y: t.clientY };
   }
 
-  // ---------- Eventos ----------
-  $("startBtn").addEventListener("click", startGame);
+  function onStart(e) {
+    if (animating || index >= deck.length) return;
+    const { x, y } = getXY(e);
+    startX = x; startY = y; curX = 0;
+    dragging = true; moved = false;
+    const wrap = $("cardWrap");
+    wrap.classList.remove("snap", "fly");
+    wrap.style.transition = "none";
+  }
 
-  $("soundToggle").addEventListener("change", (e) => {
-    soundOn = e.target.checked;
-    if (soundOn) audio(); // desbloquea el contexto con el gesto del usuario
-  });
+  function onMove(e) {
+    if (!dragging) return;
+    const { x, y } = getXY(e);
+    const dx = x - startX;
+    const dy = y - startY;
+    // Si el gesto es principalmente vertical, no interferir con el scroll
+    if (!moved && Math.abs(dy) > Math.abs(dx) * 1.8) { dragging = false; return; }
+    if (Math.abs(dx) > 5) moved = true;
+    curX = dx;
+    const rotate = dx * 0.07;
+    $("cardWrap").style.transform = "translateX(" + dx + "px) rotate(" + rotate + "deg)";
+    const ratio = Math.min(Math.abs(dx) / THRESHOLD, 1);
+    $("lblLeft").style.opacity  = dx < 0 ? ratio : 0;
+    $("lblRight").style.opacity = dx > 0 ? ratio : 0;
+    if (e.cancelable) e.preventDefault();
+  }
 
-  $("card").addEventListener("click", () => {
-    const card = $("card");
-    card.classList.toggle("flipped");
-    if (card.classList.contains("flipped")) sndFlip();
-  });
+  function onEnd() {
+    if (!dragging) return;
+    dragging = false;
+    const wrap = $("cardWrap");
+    wrap.style.transition = "";
 
-  $("timerBtn").addEventListener("click", toggleTimer);
-
-  $("nextBtn").addEventListener("click", () => {
-    if (index >= deck.length) {
-      startGame();
+    // Tap sin arrastre → flip
+    if (!moved || Math.abs(curX) < 8) {
+      $("card").classList.toggle("flipped");
+      if ($("card").classList.contains("flipped")) sndFlip();
       return;
     }
-    sndPage();
-    advance();
-  });
 
-  $("skipBtn").addEventListener("click", () => {
-    if (index >= deck.length) return;
-    sndPage();
-    // Mandar la carta actual al final del mazo (mismo turno)
-    const c = deck.splice(index, 1)[0];
-    deck.push(c);
-    renderCard();
-  });
+    if (Math.abs(curX) >= THRESHOLD) {
+      // Supera el umbral → volar la carta
+      animating = true;
+      const dir = curX > 0 ? 1 : -1;
+      const flyX = dir * (window.innerWidth + 320);
+      wrap.classList.add("fly");
+      wrap.style.transform = "translateX(" + flyX + "px) rotate(" + (dir * 28) + "deg)";
+      wrap.style.opacity = "0";
+      $("lblLeft").style.opacity = 0;
+      $("lblRight").style.opacity = 0;
 
-  $("restart").addEventListener("click", () => {
-    stopTimer();
-    showScreen("setup");
-  });
+      setTimeout(() => {
+        animating = false;
+        wrap.classList.remove("fly");
+        wrap.style.cssText = "";
+        if (dir > 0) advance();   // derecha → LO HAGO (siguiente)
+        else         skipCard();   // izquierda → PASO (saltar)
+      }, 390);
+    } else {
+      // No llega al umbral → volver a lugar
+      wrap.classList.add("snap");
+      wrap.style.transform = "";
+      $("lblLeft").style.opacity = 0;
+      $("lblRight").style.opacity = 0;
+      wrap.addEventListener("transitionend", () => wrap.classList.remove("snap"), { once: true });
+    }
+  }
+
+  // ---------- Listeners ----------
+  $("startBtn").addEventListener("click", startGame);
+  $("restartBtn").addEventListener("click", startGame);
+  $("soundToggle").addEventListener("change", (e) => { soundOn = e.target.checked; if (soundOn) audio(); });
+  $("timerBtn").addEventListener("click", toggleTimer);
+  $("skipBtn").addEventListener("click", skipCard);
+  $("nextBtn").addEventListener("click", advance);
+  $("restart").addEventListener("click", () => { stopTimer(); showScreen("setup"); });
+
+  const wrap = $("cardWrap");
+  wrap.addEventListener("touchstart", onStart, { passive: true });
+  wrap.addEventListener("touchmove",  onMove,  { passive: false });
+  wrap.addEventListener("touchend",   onEnd,   { passive: true });
+  wrap.addEventListener("mousedown",  onStart);
+  document.addEventListener("mousemove", onMove);
+  document.addEventListener("mouseup",   onEnd);
 
   updateStart();
 })();

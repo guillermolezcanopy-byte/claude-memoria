@@ -19,8 +19,7 @@
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
   html, body {
-    margin: 0;
-    height: 100%;
+    margin: 0; height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     color: #fff;
     background:
@@ -32,223 +31,68 @@
 
   #app {
     height: 100%;
-    display: flex;
-    flex-direction: column;
-    max-width: 560px;
-    margin: 0 auto;
+    display: flex; flex-direction: column;
+    max-width: 560px; margin: 0 auto;
     padding: env(safe-area-inset-top) 18px env(safe-area-inset-bottom);
   }
 
   /* ---------- Header ---------- */
-  header {
-    text-align: center;
-    padding: 22px 0 6px;
-  }
+  header { text-align: center; padding: 18px 0 4px; }
   header h1 {
-    margin: 0;
-    font-size: 30px;
-    letter-spacing: .5px;
-    font-weight: 800;
+    margin: 0; font-size: 28px; letter-spacing: .5px; font-weight: 800;
     background: linear-gradient(90deg, var(--gold), var(--accent2), var(--accent));
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
+    -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  header p {
-    margin: 4px 0 0;
-    font-size: 13px;
-    color: var(--muted);
-    letter-spacing: 2px;
-    text-transform: uppercase;
-  }
+  header p { margin: 4px 0 0; font-size: 13px; color: var(--muted); letter-spacing: 2px; text-transform: uppercase; }
 
   /* ---------- Screens ---------- */
   .screen { flex: 1; display: none; flex-direction: column; }
   .screen.active { display: flex; }
 
   /* ---------- Setup ---------- */
-  #setup { justify-content: center; gap: 22px; }
+  #setup { justify-content: center; gap: 18px; }
   .panel {
-    background: rgba(255,255,255,.05);
-    border: 1px solid rgba(255,255,255,.10);
-    border-radius: 20px;
-    padding: 20px;
-    backdrop-filter: blur(6px);
+    background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.10);
+    border-radius: 20px; padding: 18px; backdrop-filter: blur(6px);
   }
-  .panel h2 {
-    margin: 0 0 14px;
-    font-size: 15px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--gold);
-  }
-  .levels { display: flex; flex-direction: column; gap: 10px; }
+  .panel h2 { margin: 0 0 12px; font-size: 14px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gold); }
+  .levels { display: flex; flex-direction: column; gap: 9px; }
   .level {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    padding: 14px 16px;
-    border-radius: 14px;
-    border: 2px solid rgba(255,255,255,.12);
-    cursor: pointer;
-    transition: all .2s ease;
-    background: rgba(0,0,0,.15);
-    user-select: none;
+    display: flex; align-items: center; gap: 14px; padding: 12px 14px;
+    border-radius: 14px; border: 2px solid rgba(255,255,255,.12);
+    cursor: pointer; transition: all .2s ease; background: rgba(0,0,0,.15); user-select: none;
   }
-  .level .emoji { font-size: 26px; }
+  .level .emoji { font-size: 24px; }
   .level .meta { flex: 1; }
-  .level .name { font-weight: 700; font-size: 16px; }
+  .level .name { font-weight: 700; font-size: 15px; }
   .level .desc { font-size: 12px; color: var(--muted); margin-top: 2px; }
   .level .check {
-    width: 24px; height: 24px; border-radius: 50%;
-    border: 2px solid rgba(255,255,255,.3);
-    display: grid; place-items: center;
-    font-size: 14px; color: transparent;
-    transition: all .2s ease;
+    width: 22px; height: 22px; border-radius: 50%;
+    border: 2px solid rgba(255,255,255,.3); display: grid; place-items: center;
+    font-size: 13px; color: transparent; transition: all .2s ease;
   }
   .level.on { border-color: var(--accent); background: rgba(255,45,85,.15); }
   .level.on .check { background: var(--accent); border-color: var(--accent); color: #fff; }
 
   .btn {
-    border: none;
-    border-radius: 16px;
-    padding: 16px;
-    font-size: 17px;
-    font-weight: 800;
-    letter-spacing: .5px;
-    cursor: pointer;
-    color: #fff;
-    background: linear-gradient(90deg, var(--accent), var(--accent2));
-    box-shadow: 0 10px 30px rgba(255,45,85,.35);
-    transition: transform .12s ease, opacity .2s;
+    border: none; border-radius: 16px; padding: 15px;
+    font-size: 17px; font-weight: 800; letter-spacing: .5px; cursor: pointer;
+    color: #fff; background: linear-gradient(90deg, var(--accent), var(--accent2));
+    box-shadow: 0 10px 30px rgba(255,45,85,.35); transition: transform .12s ease, opacity .2s;
   }
   .btn:active { transform: scale(.97); }
   .btn:disabled { opacity: .4; cursor: not-allowed; box-shadow: none; }
   .btn.ghost {
-    background: transparent;
-    border: 1.5px solid rgba(255,255,255,.25);
-    box-shadow: none;
-    font-weight: 600;
-  }
-
-  /* ---------- Game ---------- */
-  #game { justify-content: space-between; }
-
-  .topbar {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 6px 4px 0;
-    font-size: 13px; color: var(--muted);
-  }
-  .topbar .pill {
-    background: rgba(255,255,255,.08);
-    padding: 6px 12px; border-radius: 999px;
-    font-weight: 600; color: #fff;
-  }
-
-  .card-area {
-    flex: 1;
-    display: grid;
-    place-items: center;
-    perspective: 1500px;
-    padding: 10px 0;
-  }
-
-  .card {
-    width: 100%;
-    max-width: 340px;
-    aspect-ratio: 3/4.4;
-    position: relative;
-    transform-style: preserve-3d;
-    transition: transform .6s cubic-bezier(.2,.8,.2,1);
-    cursor: pointer;
-  }
-  .card.flipped { transform: rotateY(180deg); }
-
-  .face {
-    position: absolute;
-    inset: 0;
-    border-radius: 26px;
-    backface-visibility: hidden;
-    -webkit-backface-visibility: hidden;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(0,0,0,.5);
-  }
-
-  /* back */
-  .face.back {
-    background:
-      radial-gradient(circle at 50% 30%, rgba(255,207,107,.25), transparent 60%),
-      linear-gradient(160deg, #3a0c22, #6b1030);
-    border: 2px solid rgba(255,207,107,.35);
-    display: grid; place-items: center; text-align: center;
-  }
-  .face.back .logo { font-size: 64px; }
-  .face.back .tag {
-    margin-top: 10px; letter-spacing: 4px; font-size: 12px;
-    text-transform: uppercase; color: var(--gold);
-  }
-  .face.back .hint { margin-top: 28px; font-size: 13px; color: rgba(255,255,255,.6); }
-
-  /* front */
-  .face.front {
-    transform: rotateY(180deg);
-    background: var(--card);
-    color: var(--ink);
-    display: flex; flex-direction: column;
-    padding: 26px 24px;
-  }
-  .front .badge {
-    align-self: flex-start;
-    font-size: 12px; font-weight: 800; letter-spacing: 1px;
-    text-transform: uppercase;
-    padding: 6px 12px; border-radius: 999px; color: #fff;
-  }
-  .front .num {
-    position: absolute; top: 22px; right: 24px;
-    font-size: 13px; font-weight: 700; color: var(--muted);
-  }
-  .front .body {
-    flex: 1; display: flex; align-items: center;
-  }
-  .front .text {
-    font-size: 22px; line-height: 1.35; font-weight: 600;
-  }
-  .front .foot {
-    font-size: 12px; color: var(--muted); text-align: center;
-    border-top: 1px dashed rgba(0,0,0,.12); padding-top: 12px;
-  }
-
-  .heat { display: inline-flex; gap: 2px; }
-
-  .controls {
-    display: flex; gap: 12px; padding: 4px 0 14px;
-  }
-  .controls .btn { flex: 1; }
-
-  .empty {
-    text-align: center; padding: 30px;
-  }
-  .empty h2 { color: var(--gold); }
-
-  .fade { animation: fade .5s ease; }
-  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
-
-  footer {
-    text-align: center; font-size: 11px; color: rgba(255,255,255,.3);
-    padding: 4px 0 8px;
+    background: transparent; border: 1.5px solid rgba(255,255,255,.25); box-shadow: none; font-weight: 600;
   }
 
   /* names */
   .names { display: flex; align-items: center; gap: 10px; }
   .nameInput {
-    flex: 1; min-width: 0;
-    background: rgba(0,0,0,.25);
-    border: 2px solid rgba(255,255,255,.12);
-    border-radius: 12px;
-    padding: 12px 14px;
-    color: #fff; font-size: 15px; font-weight: 600;
-    text-align: center;
-    transition: border-color .2s;
+    flex: 1; min-width: 0; background: rgba(0,0,0,.25);
+    border: 2px solid rgba(255,255,255,.12); border-radius: 12px;
+    padding: 11px 12px; color: #fff; font-size: 15px; font-weight: 600;
+    text-align: center; transition: border-color .2s;
   }
   .nameInput::placeholder { color: var(--muted); font-weight: 500; }
   .nameInput:focus { outline: none; border-color: var(--accent); }
@@ -256,9 +100,8 @@
 
   /* sound toggle */
   .toggleRow {
-    display: flex; align-items: center; gap: 10px;
-    align-self: center; cursor: pointer; user-select: none;
-    font-size: 14px; color: rgba(255,255,255,.85);
+    display: flex; align-items: center; gap: 10px; align-self: center;
+    cursor: pointer; user-select: none; font-size: 14px; color: rgba(255,255,255,.85);
   }
   .toggleRow input { display: none; }
   .switch {
@@ -273,36 +116,143 @@
   .toggleRow input:checked + .switch { background: var(--accent); }
   .toggleRow input:checked + .switch::after { transform: translateX(18px); }
 
-  /* turn pill */
+  /* ---------- Game ---------- */
+  #game { justify-content: space-between; }
+
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 4px 4px 0; font-size: 13px; color: var(--muted);
+  }
+  .topbar .pill {
+    background: rgba(255,255,255,.08); padding: 5px 11px;
+    border-radius: 999px; font-weight: 600; color: #fff;
+  }
   .pill.turn {
     background: linear-gradient(90deg, var(--accent), var(--accent2));
-    color: #fff; font-weight: 700;
-    transition: transform .25s ease;
+    color: #fff; font-weight: 700; transition: transform .25s ease;
   }
   .pill.turn.bump { transform: scale(1.12); }
 
-  /* temporizador */
-  .timerWrap { padding: 0 0 6px; display: flex; flex-direction: column; gap: 8px; }
+  /* ---------- Card area & swipe ---------- */
+  .card-area {
+    flex: 1; display: grid; place-items: center;
+    perspective: 1500px; padding: 8px 0;
+  }
+
+  /* wrapper que maneja el drag/swipe */
+  .card-wrap {
+    width: 100%; max-width: 320px;
+    aspect-ratio: 3/4.4;
+    position: relative;
+    cursor: grab; user-select: none;
+    will-change: transform;
+    touch-action: pan-y;
+  }
+  .card-wrap:active { cursor: grabbing; }
+  .card-wrap.snap { transition: transform .35s cubic-bezier(.3,.9,.3,1); }
+  .card-wrap.fly  { transition: transform .38s ease-in, opacity .38s ease-in; }
+
+  /* etiquetas de swipe estilo Tinder */
+  .swipe-lbl {
+    position: absolute; top: 28px;
+    padding: 7px 14px; border-radius: 10px; border: 3px solid;
+    font-size: 18px; font-weight: 900; letter-spacing: 2px; text-transform: uppercase;
+    opacity: 0; z-index: 10; pointer-events: none;
+  }
+  .lbl-left  { left: 14px;  color: #ff2d55; border-color: #ff2d55; transform: rotate(-18deg); }
+  .lbl-right { right: 14px; color: #2ecc71; border-color: #2ecc71; transform: rotate(18deg); }
+
+  /* la carta en sí (flip 3D) */
+  .card {
+    width: 100%; height: 100%;
+    position: relative; transform-style: preserve-3d;
+    transition: transform .6s cubic-bezier(.2,.8,.2,1);
+  }
+  .card.flipped { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute; inset: 0; border-radius: 24px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    overflow: hidden; box-shadow: 0 20px 55px rgba(0,0,0,.5);
+  }
+
+  /* back */
+  .face.back {
+    background:
+      radial-gradient(circle at 50% 30%, rgba(255,207,107,.25), transparent 60%),
+      linear-gradient(160deg, #3a0c22, #6b1030);
+    border: 2px solid rgba(255,207,107,.35);
+    display: grid; place-items: center; text-align: center;
+  }
+  .face.back .logo { font-size: 60px; }
+  .face.back .tag { margin-top: 10px; letter-spacing: 4px; font-size: 12px; text-transform: uppercase; color: var(--gold); }
+  .face.back .hint { margin-top: 24px; font-size: 13px; color: rgba(255,255,255,.6); }
+
+  /* front */
+  .face.front {
+    transform: rotateY(180deg); background: var(--card); color: var(--ink);
+    display: flex; flex-direction: column; padding: 22px 20px;
+  }
+  .front .badge {
+    align-self: flex-start; font-size: 12px; font-weight: 800; letter-spacing: 1px;
+    text-transform: uppercase; padding: 5px 11px; border-radius: 999px; color: #fff;
+  }
+  .front .num { position: absolute; top: 20px; right: 20px; font-size: 13px; font-weight: 700; color: var(--muted); }
+  .front .body { flex: 1; display: flex; align-items: center; }
+  .front .text { font-size: 20px; line-height: 1.35; font-weight: 600; }
+  .front .foot {
+    font-size: 12px; color: var(--muted); text-align: center;
+    border-top: 1px dashed rgba(0,0,0,.12); padding-top: 10px;
+  }
+
+  .heat { display: inline-flex; gap: 2px; }
+
+  /* ---------- Fin de mazo ---------- */
+  .empty { text-align: center; padding: 24px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .empty h2 { color: var(--gold); margin: 0; }
+  .empty p { color: var(--muted); margin: 0; }
+
+  /* ---------- Temporizador ---------- */
+  .timerWrap { padding: 0 0 4px; display: flex; flex-direction: column; gap: 7px; }
   .timerBtn {
-    align-self: center;
-    padding: 10px 22px; font-size: 16px; font-weight: 700;
+    align-self: center; padding: 9px 20px; font-size: 15px; font-weight: 700;
     display: inline-flex; align-items: center; gap: 8px;
   }
   .timerBtn.running { border-color: var(--accent); color: var(--gold); }
-  .timerBtn #timerLabel { font-variant-numeric: tabular-nums; min-width: 48px; text-align: center; }
-  .timerTrack {
-    height: 6px; border-radius: 999px;
-    background: rgba(255,255,255,.12); overflow: hidden;
-  }
+  .timerBtn #timerLabel { font-variant-numeric: tabular-nums; min-width: 44px; text-align: center; }
+  .timerTrack { height: 5px; border-radius: 999px; background: rgba(255,255,255,.12); overflow: hidden; }
   .timerFill {
     height: 100%; width: 100%;
     background: linear-gradient(90deg, var(--gold), var(--accent2), var(--accent));
-    transform-origin: left center;
-    transition: transform 1s linear;
+    transform-origin: left center; transition: transform 1s linear;
   }
   .timerFill.done { background: var(--accent); }
   @keyframes timeup { 0%,100%{opacity:1} 50%{opacity:.25} }
   .timerBtn.done { animation: timeup .4s ease 3; border-color: var(--accent); color: #fff; }
+
+  /* ---------- Controles circulares ---------- */
+  .controls { display: flex; justify-content: center; align-items: center; gap: 28px; padding: 4px 0 12px; }
+  .btn-action {
+    width: 58px; height: 58px; border-radius: 50%; border: 2.5px solid;
+    background: rgba(0,0,0,.3); font-size: 20px; cursor: pointer;
+    display: grid; place-items: center; transition: transform .12s ease, box-shadow .15s;
+    backdrop-filter: blur(6px);
+  }
+  .btn-action:active { transform: scale(.88); }
+  .btn-action.skip { border-color: rgba(255,45,85,.7); color: #ff2d55; }
+  .btn-action.skip:hover { box-shadow: 0 0 16px rgba(255,45,85,.35); }
+  .btn-action.next { border-color: rgba(255,207,107,.85); color: var(--gold); box-shadow: 0 0 16px rgba(255,207,107,.15); }
+  .btn-action.next:hover { box-shadow: 0 0 22px rgba(255,207,107,.35); }
+
+  .swipe-hint {
+    text-align: center; font-size: 11px; color: rgba(255,255,255,.30);
+    letter-spacing: 1px; padding: 0 0 4px;
+  }
+
+  .fade { animation: fade .45s ease; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to {opacity:1; transform:none;} }
+
+  footer { text-align: center; font-size: 11px; color: rgba(255,255,255,.3); padding: 3px 0 6px; }
 </style>
 </head>
 <body>
@@ -342,29 +292,37 @@
     <div class="topbar">
       <span id="progress" class="pill">Carta 0/0</span>
       <span id="turn" class="pill turn">Turno de —</span>
-      <span class="link" id="restart" style="cursor:pointer">↻</span>
+      <span id="restart" style="cursor:pointer;font-size:18px;opacity:.6">↻</span>
     </div>
 
     <div class="card-area">
-      <div class="card" id="card">
-        <div class="face back">
-          <div>
-            <div class="logo">🔥</div>
-            <div class="tag">Fuego Cruzado</div>
-            <div class="hint">Tocá para revelar</div>
+      <!-- wrapper de swipe -->
+      <div class="card-wrap" id="cardWrap">
+        <div class="swipe-lbl lbl-left"  id="lblLeft">✕ PASO</div>
+        <div class="swipe-lbl lbl-right" id="lblRight">LO HAGO 🔥</div>
+        <!-- card con flip 3D -->
+        <div class="card" id="card">
+          <div class="face back">
+            <div>
+              <div class="logo">🔥</div>
+              <div class="tag">Fuego Cruzado</div>
+              <div class="hint">Tocá para revelar</div>
+            </div>
           </div>
-        </div>
-        <div class="face front" id="front">
-          <span class="badge" id="badge">Suave</span>
-          <span class="num" id="num">#1</span>
-          <div class="body"><div class="text" id="cardText">…</div></div>
-          <div class="foot" id="cardFoot"></div>
+          <div class="face front" id="front">
+            <span class="badge" id="badge">Suave</span>
+            <span class="num" id="num">#1</span>
+            <div class="body"><div class="text" id="cardText">…</div></div>
+            <div class="foot" id="cardFoot"></div>
+          </div>
         </div>
       </div>
 
+      <!-- fin del mazo -->
       <div class="empty" id="empty" style="display:none">
         <h2>Se acabó el mazo 🥵</h2>
-        <p style="color:var(--muted)">Espero que la hayan pasado bien…</p>
+        <p>Espero que la hayan pasado bien…</p>
+        <button class="btn" id="restartBtn">Jugar de nuevo</button>
       </div>
     </div>
 
@@ -373,9 +331,11 @@
       <div class="timerTrack"><div class="timerFill" id="timerFill"></div></div>
     </div>
 
+    <p class="swipe-hint" id="swipeHint">← PASO · deslizá · LO HAGO →</p>
+
     <div class="controls">
-      <button class="btn ghost" id="skipBtn">Saltar</button>
-      <button class="btn" id="nextBtn">Siguiente carta</button>
+      <button class="btn-action skip" id="skipBtn" aria-label="Saltar">✕</button>
+      <button class="btn-action next" id="nextBtn" aria-label="Lo hago">🔥</button>
     </div>
   </section>
 
