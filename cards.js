@@ -71,4 +71,9 @@ const CARDS = [
   { lvl: 4, text: "Cada uno pide UN deseo sin filtro. Los dos se cumplen, uno después del otro." },
   { lvl: 4, text: "Apaguen las luces, dejen el teléfono lejos y no paren hasta que ambos estén satisfechos. Sin cartas de por medio." },
   { lvl: 4, text: "Carta comodín del infierno: el que la levantó manda absolutamente todo durante los próximos 5 minutos." },
+  { lvl: 4, text: "Edging en equipo: tu pareja decide cuándo podés llegar… y vos no tenés voz ni voto. Que sufra (rico) la espera." },
+  { lvl: 4, text: "Confesión picante: decile al oído eso que siempre quisiste pedirle pero nunca te animaste. Y háganlo." },
+  { lvl: 4, text: "Manos atadas, ojos vendados y a merced de tu pareja durante todo lo que dure la próxima canción que elija." },
+  { lvl: 4, text: "Elijan dos cartas más del mazo al azar y cúmplanlas las dos seguidas, sin pausa entre una y otra." },
+  { lvl: 4, text: "Sin manos: solo con la boca, llevá a tu pareja hasta donde aguante. Ella te dice cuándo parar… si puede hablar." },
 ];
