@@ -242,7 +242,7 @@
   // ---------- Swipe estilo Tinder ----------
   const THRESHOLD = 85; // px para confirmar la acción
   let startX = 0, startY = 0, curX = 0;
-  let dragging = false, moved = false, animating = false;
+  let dragging = false, moved = false, scrolling = false, animating = false;
 
   function getXY(e) {
     const t = e.touches ? e.touches[0] : e;
@@ -253,7 +253,7 @@
     if (animating || index >= deck.length) return;
     const { x, y } = getXY(e);
     startX = x; startY = y; curX = 0;
-    dragging = true; moved = false;
+    dragging = true; moved = false; scrolling = false;
     const wrap = $("cardWrap");
     wrap.classList.remove("snap", "fly");
     wrap.style.transition = "none";
@@ -264,9 +264,16 @@
     const { x, y } = getXY(e);
     const dx = x - startX;
     const dy = y - startY;
-    // Si el gesto es principalmente vertical, no interferir con el scroll
-    if (!moved && Math.abs(dy) > Math.abs(dx) * 1.8) { dragging = false; return; }
-    if (Math.abs(dx) > 5) moved = true;
+
+    // Esperar al menos 8px de movimiento total antes de determinar dirección.
+    // Así un tap con leve deriva (dy=1, dx=0) no cancela el gesto.
+    if (!moved && !scrolling) {
+      if (Math.abs(dx) + Math.abs(dy) < 8) return;
+      if (Math.abs(dy) > Math.abs(dx) * 1.5) { scrolling = true; return; }
+    }
+    if (scrolling) return;
+
+    moved = true;
     curX = dx;
     const rotate = dx * 0.07;
     $("cardWrap").style.transform = "translateX(" + dx + "px) rotate(" + rotate + "deg)";
@@ -278,9 +285,18 @@
 
   function onEnd() {
     if (!dragging) return;
-    dragging = false;
+    const wasScrolling = scrolling;
+    dragging = false; scrolling = false;
     const wrap = $("cardWrap");
     wrap.style.transition = "";
+
+    // Scroll vertical → solo resetear, sin flipear
+    if (wasScrolling) {
+      wrap.style.transform = "";
+      $("lblLeft").style.opacity = 0;
+      $("lblRight").style.opacity = 0;
+      return;
+    }
 
     // Tap sin arrastre → flip
     if (!moved || Math.abs(curX) < 8) {
