@@ -240,9 +240,12 @@
   }
 
   // ---------- Swipe estilo Tinder ----------
-  const THRESHOLD = 85; // px para confirmar la acción
-  let startX = 0, startY = 0, curX = 0;
-  let dragging = false, moved = false, scrolling = false, animating = false;
+  // El flip de la carta lo maneja el evento "click" nativo (confiable en
+  // todos los dispositivos). El código de swipe solo actúa cuando hay un
+  // arrastre horizontal real; si no, deja pasar el click para que flipee.
+  const THRESHOLD = 85;
+  let startX = 0, curX = 0;
+  let dragging = false, swiped = false, animating = false;
 
   function getXY(e) {
     const t = e.touches ? e.touches[0] : e;
@@ -251,9 +254,8 @@
 
   function onStart(e) {
     if (animating || index >= deck.length) return;
-    const { x, y } = getXY(e);
-    startX = x; startY = y; curX = 0;
-    dragging = true; moved = false; scrolling = false;
+    startX = getXY(e).x; curX = 0;
+    dragging = true; swiped = false;
     const wrap = $("cardWrap");
     wrap.classList.remove("snap", "fly");
     wrap.style.transition = "none";
@@ -261,74 +263,44 @@
 
   function onMove(e) {
     if (!dragging) return;
-    const { x, y } = getXY(e);
-    const dx = x - startX;
-    const dy = y - startY;
-
-    // Esperar al menos 8px de movimiento total antes de determinar dirección.
-    // Así un tap con leve deriva (dy=1, dx=0) no cancela el gesto.
-    if (!moved && !scrolling) {
-      if (Math.abs(dx) + Math.abs(dy) < 8) return;
-      if (Math.abs(dy) > Math.abs(dx) * 1.5) { scrolling = true; return; }
-    }
-    if (scrolling) return;
-
-    moved = true;
+    const dx = getXY(e).x - startX;
+    // Solo tomar el control si el movimiento horizontal supera 10px
+    if (Math.abs(dx) < 10) return;
     curX = dx;
-    const rotate = dx * 0.07;
-    $("cardWrap").style.transform = "translateX(" + dx + "px) rotate(" + rotate + "deg)";
+    swiped = true;
+    $("cardWrap").style.transform = "translateX(" + dx + "px) rotate(" + dx * 0.07 + "deg)";
     const ratio = Math.min(Math.abs(dx) / THRESHOLD, 1);
     $("lblLeft").style.opacity  = dx < 0 ? ratio : 0;
     $("lblRight").style.opacity = dx > 0 ? ratio : 0;
-    if (e.cancelable) e.preventDefault();
+    if (e.cancelable) e.preventDefault(); // evita scroll y suprime el click posterior
   }
 
   function onEnd() {
     if (!dragging) return;
-    const wasScrolling = scrolling;
-    dragging = false; scrolling = false;
+    dragging = false;
     const wrap = $("cardWrap");
     wrap.style.transition = "";
 
-    // Scroll vertical → solo resetear, sin flipear
-    if (wasScrolling) {
-      wrap.style.transform = "";
-      $("lblLeft").style.opacity = 0;
-      $("lblRight").style.opacity = 0;
-      return;
-    }
+    if (!swiped) return; // tap → el evento "click" nativo lo maneja
 
-    // Tap sin arrastre → flip
-    if (!moved || Math.abs(curX) < 8) {
-      $("card").classList.toggle("flipped");
-      if ($("card").classList.contains("flipped")) sndFlip();
-      return;
-    }
+    $("lblLeft").style.opacity = 0;
+    $("lblRight").style.opacity = 0;
 
     if (Math.abs(curX) >= THRESHOLD) {
-      // Supera el umbral → volar la carta
       animating = true;
       const dir = curX > 0 ? 1 : -1;
-      const flyX = dir * (window.innerWidth + 320);
       wrap.classList.add("fly");
-      wrap.style.transform = "translateX(" + flyX + "px) rotate(" + (dir * 28) + "deg)";
+      wrap.style.transform = "translateX(" + dir * (window.innerWidth + 320) + "px) rotate(" + dir * 28 + "deg)";
       wrap.style.opacity = "0";
-      $("lblLeft").style.opacity = 0;
-      $("lblRight").style.opacity = 0;
-
       setTimeout(() => {
         animating = false;
         wrap.classList.remove("fly");
         wrap.style.cssText = "";
-        if (dir > 0) advance();   // derecha → LO HAGO (siguiente)
-        else         skipCard();   // izquierda → PASO (saltar)
+        if (dir > 0) advance(); else skipCard();
       }, 390);
     } else {
-      // No llega al umbral → volver a lugar
       wrap.classList.add("snap");
       wrap.style.transform = "";
-      $("lblLeft").style.opacity = 0;
-      $("lblRight").style.opacity = 0;
       wrap.addEventListener("transitionend", () => wrap.classList.remove("snap"), { once: true });
     }
   }
@@ -341,6 +313,13 @@
   $("skipBtn").addEventListener("click", skipCard);
   $("nextBtn").addEventListener("click", advance);
   $("restart").addEventListener("click", () => { stopTimer(); showScreen("setup"); });
+
+  // Flip via click nativo: confiable en mobile (tap) y desktop (click)
+  $("cardWrap").addEventListener("click", () => {
+    if (animating || index >= deck.length) return;
+    $("card").classList.toggle("flipped");
+    if ($("card").classList.contains("flipped")) sndFlip();
+  });
 
   const wrap = $("cardWrap");
   wrap.addEventListener("touchstart", onStart, { passive: true });
